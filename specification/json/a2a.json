@@ -76,6 +76,12 @@
                 },
                 {
                     "$ref": "#/definitions/GetAuthenticatedExtendedCardRequest"
+                },
+                {
+                    "$ref": "#/definitions/PublishMessageRequest"
+                },
+                {
+                    "$ref": "#/definitions/SubscribeMessageRequest"
                 }
             ],
             "description": "A discriminated union representing all possible JSON-RPC 2.0 requests supported by the A2A specification."
@@ -1860,6 +1866,51 @@
             ],
             "type": "object"
         },
+        "MessagePublishParams": {
+            "description": "Defines the parameters for a request to publish a message. This can be used\nto create a new task, continue an existing one, or restart a task.",
+            "properties": {
+                "headers": {
+                    "description": "A list of extensible publish properties.",
+                    "items": {
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "message": {
+                    "$ref": "#/definitions/Message",
+                    "description": "The message object being published."
+                },
+                "topic": {
+                    "description": "The target topic where the message is publishing to",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "message",
+                "topic"
+            ],
+            "type": "object"
+        },
+        "MessageSubscribeParams": {
+            "description": "Defines the parameters for a request to subscribe messages. This can be used\nto fetch tasks or results.",
+            "headers": {
+                "description": "A list of extensible subscribe properties.",
+                "items": {
+                    "type": "object"
+                },
+                "type": "array"
+            },
+            "properties": {
+                "topic": {
+                    "description": "The target topic to subscribe messages.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "topic"
+            ],
+            "type": "object"
+        },
         "MethodNotFoundError": {
             "description": "An error indicating that the requested method does not exist or is not available.",
             "properties": {
@@ -2088,6 +2139,73 @@
             "required": [
                 "code",
                 "message"
+            ],
+            "type": "object"
+        },
+        "PublishMessageRequest": {
+            "description": "Represents a JSON-RPC request for the `message/publish` method.",
+            "properties": {
+                "id": {
+                    "description": "The identifier for this request.",
+                    "type": [
+                        "string",
+                        "integer"
+                    ]
+                },
+                "jsonrpc": {
+                    "const": "2.0",
+                    "description": "The version of the JSON-RPC protocol. MUST be exactly \"2.0\".",
+                    "type": "string"
+                },
+                "method": {
+                    "const": "message/publish",
+                    "description": "The method name. Must be 'message/publish'.",
+                    "type": "string"
+                },
+                "params": {
+                    "$ref": "#/definitions/MessagePublishParams",
+                    "description": "The parameters for sending a message."
+                }
+            },
+            "required": [
+                "id",
+                "jsonrpc",
+                "method",
+                "params"
+            ],
+            "type": "object"
+        },
+        "PublishMessageResponse": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/JSONRPCErrorResponse"
+                },
+                {
+                    "$ref": "#/definitions/PublishMessageSuccessResponse"
+                }
+            ],
+            "description": "Represents a JSON-RPC response for the `message/publish` method."
+        },
+        "PublishMessageSuccessResponse": {
+            "description": "Represents a successful JSON-RPC response for the `message/publish` method.",
+            "properties": {
+                "id": {
+                    "description": "The identifier established by the client.",
+                    "type": [
+                        "string",
+                        "integer",
+                        "null"
+                    ]
+                },
+                "jsonrpc": {
+                    "const": "2.0",
+                    "description": "The version of the JSON-RPC protocol. MUST be exactly \"2.0\".",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "jsonrpc"
             ],
             "type": "object"
         },
@@ -2348,6 +2466,85 @@
                 "result": {
                     "$ref": "#/definitions/TaskPushNotificationConfig",
                     "description": "The result, containing the configured push notification settings."
+                }
+            },
+            "required": [
+                "id",
+                "jsonrpc",
+                "result"
+            ],
+            "type": "object"
+        },
+        "SubscribeMessageRequest": {
+            "description": "Represents a JSON-RPC request for the `message/subscribe` method.",
+            "properties": {
+                "id": {
+                    "description": "The identifier for this request.",
+                    "type": [
+                        "string",
+                        "integer"
+                    ]
+                },
+                "jsonrpc": {
+                    "const": "2.0",
+                    "description": "The version of the JSON-RPC protocol. MUST be exactly \"2.0\".",
+                    "type": "string"
+                },
+                "method": {
+                    "const": "message/subsribe",
+                    "description": "The method name. Must be 'message/subscribe'.",
+                    "type": "string"
+                },
+                "params": {
+                    "$ref": "#/definitions/MessageSubscribeParams",
+                    "description": "The parameters for subscribe a message."
+                }
+            },
+            "required": [
+                "id",
+                "jsonrpc",
+                "method",
+                "params"
+            ],
+            "type": "object"
+        },
+        "SubscribeMessageResponse": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/JSONRPCErrorResponse"
+                },
+                {
+                    "$ref": "#/definitions/SendStreamingMessageSuccessResponse"
+                }
+            ],
+            "description": "Represents a JSON-RPC response for the `message/send` method."
+        },
+        "SubscribeMessageSuccessResponse": {
+            "description": "Represents a successful JSON-RPC response for the `message/subscribe` method.",
+            "properties": {
+                "id": {
+                    "description": "The identifier established by the client.",
+                    "type": [
+                        "string",
+                        "integer",
+                        "null"
+                    ]
+                },
+                "jsonrpc": {
+                    "const": "2.0",
+                    "description": "The version of the JSON-RPC protocol. MUST be exactly \"2.0\".",
+                    "type": "string"
+                },
+                "result": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Task"
+                        },
+                        {
+                            "$ref": "#/definitions/Message"
+                        }
+                    ],
+                    "description": "The result, which can be a direct reply Message or the initial Task object."
                 }
             },
             "required": [
@@ -2720,4 +2917,3 @@
         }
     }
 }
-
